@@ -1,0 +1,12 @@
+C:\Users\User\Downloads\WebRTC-Stack-Sample-2013\WebRTC C# Sample\bin\Debug\webrtcpassivesample.html
+C:\Users\User\Downloads\WebRTC-Stack-Sample-2013\WebRTC C# Sample\bin\Debug\webrtcsample.html
+C:\Users\User\Downloads\WebRTC-Stack-Sample-2013\WebRTC C# Sample\bin\Debug\WebRTC Sample.exe.config
+C:\Users\User\Downloads\WebRTC-Stack-Sample-2013\WebRTC C# Sample\bin\Debug\WebRTC Sample.exe
+C:\Users\User\Downloads\WebRTC-Stack-Sample-2013\WebRTC C# Sample\bin\Debug\WebRTC Sample.pdb
+C:\Users\User\Downloads\WebRTC-Stack-Sample-2013\WebRTC C# Sample\obj\Debug\WebRTC_Sample.MainForm.resources
+C:\Users\User\Downloads\WebRTC-Stack-Sample-2013\WebRTC C# Sample\obj\Debug\WebRTC_Sample.Properties.Resources.resources
+C:\Users\User\Downloads\WebRTC-Stack-Sample-2013\WebRTC C# Sample\obj\Debug\WebRTC_Sample.SessionForm.resources
+C:\Users\User\Downloads\WebRTC-Stack-Sample-2013\WebRTC C# Sample\obj\Debug\WebRTC_Sample.StunSettingsForm.resources
+C:\Users\User\Downloads\WebRTC-Stack-Sample-2013\WebRTC C# Sample\obj\Debug\WebRTC Sample.csproj.GenerateResource.Cache
+C:\Users\User\Downloads\WebRTC-Stack-Sample-2013\WebRTC C# Sample\obj\Debug\WebRTC Sample.exe
+C:\Users\User\Downloads\WebRTC-Stack-Sample-2013\WebRTC C# Sample\obj\Debug\WebRTC Sample.pdb
