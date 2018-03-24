@@ -18,6 +18,8 @@ limitations under the License.
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #endif
+//me
+//#include <openssl/ssl.h>
 
 #include "ILibParsers.h"
 #include "ILibAsyncSocket.h"
@@ -413,8 +415,9 @@ void ILibWrapper_WebRTC_InitializeCrypto(ILibWrapper_WebRTC_ConnectionFactoryStr
 	util_mkCert(&(factory->selfcert), &(factory->selftlsclientcert), 2048, 10000, "localhost", CERTIFICATE_TLS_CLIENT, NULL);
 
 	// Init DTLS
-	factory->ctx = SSL_CTX_new(DTLS_method());
-	SSL_CTX_set_ecdh_auto(factory->ctx, 1);
+	factory->ctx = SSL_CTX_new(DTLSv1_method());
+	//factory->ctx = 0;
+	//SSL_CTX_set_ecdh_auto(factory->ctx, 1);
 
 	SSL_CTX_use_certificate(factory->ctx, factory->selftlscert.x509);
 	SSL_CTX_use_PrivateKey(factory->ctx, factory->selftlscert.pkey);		

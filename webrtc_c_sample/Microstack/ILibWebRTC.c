@@ -5199,7 +5199,7 @@ void ILibStunClient_SetOptions(void* StunModule, SSL_CTX* securityContext, char*
 
 	if (obj->SecurityContext != NULL)
 	{
-		SSL_CTX_set_ecdh_auto(obj->SecurityContext, 1);
+		//SSL_CTX_set_ecdh_auto(obj->SecurityContext, 1);
 		SSL_CTX_set_session_cache_mode(obj->SecurityContext, SSL_SESS_CACHE_OFF);
 		SSL_CTX_set_read_ahead(obj->SecurityContext, 1);
 		SSL_CTX_set_verify(obj->SecurityContext, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, ILibStunClient_dTLS_verify_callback);

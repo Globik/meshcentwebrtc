@@ -27,7 +27,7 @@ $(EXENAME): $(OBJECTS)
 release:
 	$(MAKE) $(MAKEFILE) EXENAME=$(EXENAME) INCDIRS="-I. -Iopenssl/include -Imicrostack -Icore" CFLAGS="-O2 -Wall -D_POSIX -D_DEBUG -D_DAEMON -DMICROSTACK_PROXY -fno-strict-aliasing $(INCDIRS)" LDFLAGS="-Lopenssl-static/x86 -L. -lpthread -ldl -lssl -lz -lutil -lcrypto -ljpeg -lX11 -lXtst -lrt"
 	strip ./$(EXENAME)
-
+# ar -cvq libdima.a  ILibWebRTC.o ILibWrapperWebRTC.o ILibAsyncSocket.o ILibParsers.o ILibAsyncUDPSocket.o ../core/utils.o
 clean:
 	rm -f *.o
 	rm -f core/*.o
@@ -42,7 +42,8 @@ depend: $(SOURCES)
 	$(CC) -M $(CFLAGS) $(SOURCES) $(HEADERS) > depend
 	
 linux-32:
-	$(MAKE) $(MAKEFILE) EXENAME="webrtc_sample_linux_x86" INCDIRS="-I. -Iopenssl/include -Imicrostack -Icore" CFLAGS="-m32 -O2 -Wall -D_POSIX -D_DEBUG -D_DAEMON -DMICROSTACK_PROXY -fno-strict-aliasing $(INCDIRS)" LDFLAGS="-m32 -Lopenssl-static/x86 -L. -lpthread -Wl,--no-as-needed -ldl -lssl -lutil -lcrypto -lrt"
+	$(MAKE) $(MAKEFILE) EXENAME="webrtc_sample_linux_x86" INCDIRS="-I. -Iopenssl/include -Imicrostack -Icore" CFLAGS="-m32 -O2 -Wall -D_POSIX -D_DEBUG
+ -D_DAEMON -DMICROSTACK_PROXY -fno-strict-aliasing $(INCDIRS)" LDFLAGS="-m32 -Lopenssl-static/x86 -L. -lpthread -Wl,--no-as-needed -ldl -lssl -lutil -lcrypto -lrt"
 	strip ./webrtc_sample_linux_x86
 
 linux-64:

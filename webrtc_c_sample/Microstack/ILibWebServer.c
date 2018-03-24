@@ -237,7 +237,7 @@ struct packetheader *header,
 		{
 			char body[255];
 			int bodyLength;
-			bodyLength = fucksnprintf(body, 255, "HTTP/1.1 413 Request Too Big (MaxHeader=%d)\r\n\r\n", MAX_HTTP_HEADER_SIZE);
+			bodyLength = snprintf(body, 255, "HTTP/1.1 413 Request Too Big (MaxHeader=%d)\r\n\r\n", MAX_HTTP_HEADER_SIZE);
 			ILibAsyncSocket_Send(ws->Reserved2, body, bodyLength, ILibAsyncSocket_MemoryOwnership_USER);
 		}
 	}
@@ -272,7 +272,7 @@ struct packetheader *header,
 			//
 			char body[255];
 			int bodyLength;
-			bodyLength = fucksnprintf(body, 255, "HTTP/1.1 400 Bad Request (Missing Host Field)\r\n\r\n");
+			bodyLength = snprintf(body, 255, "HTTP/1.1 400 Bad Request (Missing Host Field)\r\n\r\n");
 			ILibWebServer_Send_Raw(ws, body, bodyLength, ILibAsyncSocket_MemoryOwnership_USER, ILibWebServer_DoneFlag_Done);
 			return;
 		}
@@ -997,7 +997,7 @@ void ILibWebServer_Digest_SendUnauthorized(struct ILibWebServer_Session *session
 	ILibWebServer_Send_Raw(session, nonce, 32, ILibAsyncSocket_MemoryOwnership_USER, ILibWebServer_DoneFlag_NotDone);
 	ILibWebServer_Send_Raw(session, "\", opaque=\"", 11, ILibAsyncSocket_MemoryOwnership_USER, ILibWebServer_DoneFlag_NotDone);
 	ILibWebServer_Send_Raw(session, opaque, 16, ILibAsyncSocket_MemoryOwnership_USER, ILibWebServer_DoneFlag_NotDone);
-	l = fucksnprintf(nonce, 33, "\"\r\nContent-Length: %d\r\n\r\n", htmllen);
+	l = snprintf(nonce, 33, "\"\r\nContent-Length: %d\r\n\r\n", htmllen);
 	ILibWebServer_Send_Raw(session, nonce, l, ILibAsyncSocket_MemoryOwnership_USER, ILibWebServer_DoneFlag_NotDone);
 	ILibWebServer_Send_Raw(session, html, htmllen, ILibAsyncSocket_MemoryOwnership_USER, ILibWebServer_DoneFlag_Done);
 }
@@ -1141,7 +1141,7 @@ int ILibWebServer_Digest_ValidatePassword(struct ILibWebServer_Session *session,
 
 	l = strlen(username) + strlen(realm) + passwordLen + 3;
 	if ((tmp = (char*)malloc(l)) == NULL) ILIBCRITICALEXIT(254);
-	tmpLen = fucksnprintf(tmp, l, "%s:%s:", username, realm);
+	tmpLen = snprintf(tmp, l, "%s:%s:", username, realm);
 	memcpy(tmp + tmpLen, password, passwordLen);
 	tmpLen += passwordLen;
 	tmp[tmpLen] = 0;
@@ -1152,12 +1152,12 @@ int ILibWebServer_Digest_ValidatePassword(struct ILibWebServer_Session *session,
 	if ((tmp = (char*)malloc(l)) == NULL) ILIBCRITICALEXIT(254);
 	hdr->Directive[hdr->DirectiveLength] = 0;
 	//ILibToLower(hdr->Directive, hdr->DirectiveLength, hdr->Directive);
-	tmpLen = fucksnprintf(tmp, l, "%s:%s", hdr->Directive, uri);
+	tmpLen = snprintf(tmp, l, "%s:%s", hdr->Directive, uri);
 	tmp[tmpLen] = 0;
 	util_md5hex(tmp, tmpLen, result2);
 
 	free(tmp);
-	tmpLen = fucksnprintf(value, 100, "%s:%s:%s", result1, nonce, result2);
+	tmpLen = snprintf(value, 100, "%s:%s:%s", result1, nonce, result2);
 	value[tmpLen] = 0;
 	util_md5hex(value, tmpLen, result3);
 
@@ -1435,7 +1435,7 @@ enum ILibWebServer_Status ILibWebServer_StreamHeader_Raw(struct ILibWebServer_Se
 	//
 	if ((buffer = (char*)malloc(20 + strlen(StatusData))) == NULL) ILIBCRITICALEXIT(254);
 	if (buffer == NULL) ILIBCRITICALEXIT(254);
-	bufferLength = fucksnprintf(buffer, 20 + strlen(StatusData), "HTTP/%s %d %s", HTTPVERSION, StatusCode, StatusData);
+	bufferLength = snprintf(buffer, 20 + strlen(StatusData), "HTTP/%s %d %s", HTTPVERSION, StatusCode, StatusData);
 
 	//
 	// Send the first portion of the headers across
@@ -1674,7 +1674,7 @@ enum ILibWebServer_Status ILibWebServer_StreamBody(struct ILibWebServer_Session 
 			// Calculate the length of the body in hex, and create the chunk header
 			//
 			if ((hex = (char*)malloc(16)) == NULL) ILIBCRITICALEXIT(254);
-			hexLen = fucksnprintf(hex, 16, "%X\r\n", bufferSize);
+			hexLen = snprintf(hex, 16, "%X\r\n", bufferSize);
 			RetVal = ILibWebServer_TRIED_TO_SEND_ON_CLOSED_SOCKET;
 
 			//

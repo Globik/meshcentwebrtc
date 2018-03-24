@@ -2701,7 +2701,7 @@ int ILibWebClient_StreamRequestBody(
 		wr = (struct ILibWebRequest*)ILibQueue_PeekQueue(t->wcdo->RequestQueue);
 		if (body != NULL && bodyLength > 0)
 		{
-			hexLen = fucksnprintf(hex, 16, "%X\r\n", bodyLength);
+			hexLen = snprintf(hex, 16, "%X\r\n", bodyLength);
 			result = ILibAsyncSocket_Send(t->wcdo->SOCK, hex, hexLen, ILibAsyncSocket_MemoryOwnership_USER);
 			if (result >= 0)
 			{

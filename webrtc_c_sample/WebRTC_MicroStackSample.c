@@ -26,7 +26,10 @@ limitations under the License.
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
 #endif
-
+#define green "\x1b[32m"
+#define yellow "\x1b[33m"
+#define red "\x1b[31m"
+#define rst "\x1b[0m"
 #include "Microstack/ILibParsers.h"
 #include "Microstack/ILibAsyncSocket.h"
 #include "Microstack/ILibWebRTC.h"
@@ -58,20 +61,20 @@ int useStun = 0;
 void OnDataChannelData(ILibWrapper_WebRTC_DataChannel *dataChannel, char* buffer, int bufferLen)
 {
 	buffer[bufferLen] = 0;
-	printf("Received data on [%s]: %s\r\n", dataChannel->channelName, buffer);
+	printf(red"Received data on [%s]: %s\r\n"rst, dataChannel->channelName, buffer);
 }
 
 // This is called when the Data Channel was closed
 void OnDataChannelClosed(ILibWrapper_WebRTC_DataChannel *dataChannel)
 {
-	printf("DataChannel [%s]:%u was closed\r\n", dataChannel->channelName, dataChannel->streamId);
+	printf(red"DataChannel [%s]:%u was closed\r\n"rst, dataChannel->channelName, dataChannel->streamId);
 }
 
 // This is called when the remote ACK's our DataChannel creation request
 void OnDataChannelAck(ILibWrapper_WebRTC_DataChannel *dataChannel)
 {
 	mDataChannel = dataChannel;
-	printf("DataChannel [%s] was successfully ACK'ed\r\n", dataChannel->channelName);
+	printf(red"DataChannel [%s] was successfully ACK'ed\r\n"rst, dataChannel->channelName);
 	mDataChannel->OnStringData = (ILibWrapper_WebRTC_DataChannel_OnData)&OnDataChannelData;
 	mDataChannel->OnClosed = (ILibWrapper_WebRTC_DataChannel_OnClosed)&OnDataChannelClosed;
 }
@@ -79,14 +82,15 @@ void OnDataChannelAck(ILibWrapper_WebRTC_DataChannel *dataChannel)
 // This is called when a WebRTC Connection is established or disconnected
 void WebRTCConnectionSink(ILibWrapper_WebRTC_Connection connection, int connected)
 {
+	printf(red"webrtcconnectionsink\n"rst);
 	if(connected)
 	{
-		printf("WebRTC connection Established. [%s]\r\n", ILibWrapper_WebRTC_Connection_DoesPeerSupportUnreliableMode(connection)==0?"RELIABLE Only":"UNRELIABLE Supported");
+		printf(red"WebRTC connection Established. [%s]\r\n"rst, ILibWrapper_WebRTC_Connection_DoesPeerSupportUnreliableMode(connection)==0?"RELIABLE Only":"UNRELIABLE Supported");
 		ILibWrapper_WebRTC_DataChannel_Create(connection, "MyDataChannel", 13, &OnDataChannelAck);
 	}
 	else
 	{
-		printf("WebRTC connection is closed.\r\n");
+		printf(red"WebRTC connection is closed.\r\n"rst);
 		mConnection = NULL;
 		mDataChannel = NULL;
 	}
@@ -95,7 +99,7 @@ void WebRTCConnectionSink(ILibWrapper_WebRTC_Connection connection, int connecte
 // This is called when the remote side created a data channel
 void WebRTCDataChannelSink(ILibWrapper_WebRTC_Connection connection, ILibWrapper_WebRTC_DataChannel *dataChannel)
 {
-	printf("WebRTC Data Channel (%u:%s) was created.\r\n", dataChannel->streamId, dataChannel->channelName);
+	printf(red"WebRTC Data Channel (%u:%s) was created.\r\n"rst, dataChannel->streamId, dataChannel->channelName);
 	mDataChannel = dataChannel;
 	mDataChannel->OnStringData = (ILibWrapper_WebRTC_DataChannel_OnData)&OnDataChannelData;
 	mDataChannel->OnClosed = (ILibWrapper_WebRTC_DataChannel_OnClosed)&OnDataChannelClosed;
@@ -103,12 +107,14 @@ void WebRTCDataChannelSink(ILibWrapper_WebRTC_Connection connection, ILibWrapper
 
 void WebRTCConnectionSendOkSink(ILibWrapper_WebRTC_Connection connection)
 {
+	printf(red"webrtcconnectionsendoksink\n"rst);
 	UNREFERENCED_PARAMETER(connection);
 }
 
 // If we launched this sample with "STUN", then this is called when a STUN candidate is found while setting an offer
 void CandidateSink(ILibWrapper_WebRTC_Connection connection, struct sockaddr_in6* candidate)
 {
+	printf(red"candidatesink!\n"rst);
 	SimpleRendezvousServer sender;
 	SimpleRendezvousServerToken token;
 	char *sdp = ILibWrapper_WebRTC_Connection_AddServerReflexiveCandidateToLocalSDP(connection, candidate);
@@ -116,17 +122,21 @@ void CandidateSink(ILibWrapper_WebRTC_Connection connection, struct sockaddr_in6
 	ILibWrapper_WebRTC_Connection_GetUserData(connection, &sender, &token, NULL);
 	if(SimpleRendezvousServer_WebSocket_IsWebSocket(token)==0)
 	{
+		printf(red"ws is ws(token?)\n"rst);
 		SimpleRendezvousServer_Respond(sender, token, 1, sdp, strlen(sdp), ILibAsyncSocket_MemoryOwnership_CHAIN); // Send the SDP to the remote side
 	}
 	else
 	{
+		printf(red"not token?\n"rst);
 		SimpleRendezvousServer_WebSocket_Send(token, SimpleRendezvousServer_WebSocket_DataType_TEXT, sdp, strlen(sdp), ILibAsyncSocket_MemoryOwnership_CHAIN, SimpleRendezvousServer_FragmentFlag_Complete);
 	}
 }
 
 // If we launched this sample with "STUN", then this is called when a STUN candidate is found while generating an offer
+
 void PassiveCandidateSink(ILibWrapper_WebRTC_Connection connection, struct sockaddr_in6* candidate)
 {
+	printf("While generating an offer?\n"rst);
 	SimpleRendezvousServer sender;
 	SimpleRendezvousServerToken token;
 	char *offer;
@@ -137,6 +147,7 @@ void PassiveCandidateSink(ILibWrapper_WebRTC_Connection connection, struct socka
 	ILibWrapper_WebRTC_Connection_GetUserData(connection, &sender, &token, (void**)&h1);
 
 	offer = ILibWrapper_WebRTC_Connection_AddServerReflexiveCandidateToLocalSDP(connection, candidate);
+	printf(green"ofer: \n %s\n"rst,offer);
 	encodedOfferLen = ILibBase64Encode((unsigned char*)offer, strlen(offer),(unsigned char**)&encodedOffer);
 
 	h1 = ILibString_Replace(passiveHtmlBody, passiveHtmlBodyLength, "/*{{{SDP}}}*/", 13, encodedOffer, encodedOfferLen);
@@ -146,26 +157,33 @@ void PassiveCandidateSink(ILibWrapper_WebRTC_Connection connection, struct socka
 	SimpleRendezvousServer_Respond(sender, token, 1, h1, strlen(h1), ILibAsyncSocket_MemoryOwnership_CHAIN); // Send the SDP to the remote side
 }
 
-void OnWebSocket(SimpleRendezvousServerToken sender, int InterruptFlag, struct packetheader *header, char *bodyBuffer, int bodyBufferLen, SimpleRendezvousServer_WebSocket_DataTypes bodyBufferType, SimpleRendezvousServer_DoneFlag done)
+void OnWebSocket(SimpleRendezvousServerToken sender, int InterruptFlag, struct packetheader *header, char *bodyBuffer,
+				 int bodyBufferLen, SimpleRendezvousServer_WebSocket_DataTypes bodyBufferType, SimpleRendezvousServer_DoneFlag done)
 {	
+	printf(red"on websocket\n"rst);
+	
 	if(done == SimpleRendezvousServer_DoneFlag_NotDone)
 	{
-		// We have the entire offer
+		printf(yellow"We have the entire offer\n"rst);
 			char *offer;
 		if (mConnection == NULL)
 		{
-			// The browser initiated the SDP offer, so we have to create a connection and set the offer
-			mConnection = ILibWrapper_WebRTC_ConnectionFactory_CreateConnection(mConnectionFactory, &WebRTCConnectionSink, &WebRTCDataChannelSink, &WebRTCConnectionSendOkSink);
+			printf(yellow"The browser initiated the SDP offer, so we have to create a connection and set the offer\n"rst);
+			mConnection = ILibWrapper_WebRTC_ConnectionFactory_CreateConnection(mConnectionFactory, 
+																				&WebRTCConnectionSink, 
+																				&WebRTCDataChannelSink, 
+																				&WebRTCConnectionSendOkSink);
 			ILibWrapper_WebRTC_Connection_SetStunServers(mConnection, stunServerList, 9);
 
 			if (useStun==0)
 			{
+				printf(red"stun is 0\n"rst);
 				offer = ILibWrapper_WebRTC_Connection_SetOffer(mConnection, bodyBuffer, bodyBufferLen, NULL);
 				SimpleRendezvousServer_WebSocket_Send(sender, SimpleRendezvousServer_WebSocket_DataType_TEXT, offer, strlen(offer), ILibAsyncSocket_MemoryOwnership_CHAIN, SimpleRendezvousServer_FragmentFlag_Complete);
 			}
 			else
 			{
-				// We're freeing this, becuase we'll generate the offer in the candidate callback...
+				printf(yellow"We're freeing this, becuase we'll generate the offer in the candidate callback...\n"rst);
 				// The best way, is to return this offer, and update the candidate incrementally, but that is for another sample
 				ILibWrapper_WebRTC_Connection_SetUserData(mConnection, NULL, sender, NULL);
 				free(ILibWrapper_WebRTC_Connection_SetOffer(mConnection, bodyBuffer, bodyBufferLen, &CandidateSink));
@@ -173,20 +191,22 @@ void OnWebSocket(SimpleRendezvousServerToken sender, int InterruptFlag, struct p
 		}
 		else
 		{
-			// We inititiated the SDP exchange, so the browser is just giving us a response... Even tho, this will generate a counter-response
+			printf(yellow"We inititiated the SDP exchange, so the browser is just giving us a response... Even tho, this will generate a counter-response\n"rst);
 			// we don't need to send it back to the browser, so we'll just drop it.
-			printf("Setting Offer...\r\n");
+			printf(red"Setting Offer...\r\n"rst);
 			free(ILibWrapper_WebRTC_Connection_SetOffer(mConnection, bodyBuffer, bodyBufferLen, NULL));	
 		}
 	}
 }
 void OnWebSocketClosed(SimpleRendezvousServerToken sender)
 {
+	printf("websock closed\n");
 }
 
 // This gets called When the browser hits one of the two URLs
 void Rendezvous_OnGet(SimpleRendezvousServer sender, SimpleRendezvousServerToken token, char* path, char* receiver)
 {
+	printf(green"on Get\n"rst);
 	if(strcmp(path, "/active")==0)
 	{
 		if(mConnection != NULL) { ILibWrapper_WebRTC_Connection_Disconnect(mConnection); mConnection = NULL; }
@@ -206,6 +226,7 @@ void Rendezvous_OnGet(SimpleRendezvousServer sender, SimpleRendezvousServerToken
 	}
 	else if(strcmp(path, "/websocket")==0)
 	{
+		printf(red"/websocket\n"rst);
 		int v = SimpleRendezvousServer_WebSocket_IsRequest(token);
 
 		if(SimpleRendezvousServer_IsAuthenticated(token, "www.meshcentral.com", 19)!=0)
@@ -213,17 +234,20 @@ void Rendezvous_OnGet(SimpleRendezvousServer sender, SimpleRendezvousServerToken
 			char* name = SimpleRendezvousServer_GetUsername(token);
 			if(SimpleRendezvousServer_ValidatePassword(token, "bryan", 5)!=0)
 			{
+				printf(red"rendevous respond\n"rst);
 				SimpleRendezvousServer_Respond(sender, token, 1, wshtmlbody, wshtmlBodyLength, ILibAsyncSocket_MemoryOwnership_USER);  // Send the HTML to the Browser
 			}
 		}
 	}
 	else if(strcmp(path, "/websocketInit")==0)
 	{
+		printf(green"/websocketInit\n"rst);
 		int v = SimpleRendezvousServer_WebSocket_IsRequest(token);
 		SimpleRendezvousServer_UpgradeWebSocket(token, 65535, &OnWebSocket, &OnWebSocketClosed);
 	}
 	else if(strcmp(path, "/passive")==0)
 	{
+		printf("/passive\n");
 		char* offer;
 		char* encodedOffer = NULL;
 		int encodedOfferLen;
@@ -255,7 +279,7 @@ void Rendezvous_OnGet(SimpleRendezvousServer sender, SimpleRendezvousServerToken
 		{
 			//
 			// If STUN was enabled, to simplify this sample app, we'll generate the offer, but we won't do anything with it, as we'll wait until
-			// we get called back saying that candidate gathering was done
+			printf(red"we get called back saying that candidate gathering was done\n"rst);
 			//
 			ILibWrapper_WebRTC_Connection_SetUserData(mConnection, sender, token, NULL);
 			free(ILibWrapper_WebRTC_Connection_GenerateOffer(mConnection, &PassiveCandidateSink));
@@ -265,7 +289,7 @@ void Rendezvous_OnGet(SimpleRendezvousServer sender, SimpleRendezvousServerToken
 	}
 	else
 	{
-		// If we got a GET request for something other than ACTIVE or PASSIVE, we'll just return an error
+		printf(red"If we got a GET request for something other than ACTIVE or PASSIVE, we'll just return an error\n"rst);
 		SimpleRendezvousServer_Respond(sender, token, 0, NULL, 0, ILibAsyncSocket_MemoryOwnership_CHAIN); 
 	}
 }
@@ -273,21 +297,23 @@ void Rendezvous_OnGet(SimpleRendezvousServer sender, SimpleRendezvousServerToken
 // This will get called by the javascript in the Browser, to pass us offers
 void Rendezvous_OnPost(SimpleRendezvousServer sender, SimpleRendezvousServerToken token, char* path, char* data, int dataLen)
 {
+	printf(red"onpost\n"rst);
 	char *offer;
 	if (mConnection == NULL)
 	{
-		// The browser initiated the SDP offer, so we have to create a connection and set the offer
+		 printf("The browser initiated the SDP offer, so we have to create a connection and set the offer\n");
 		mConnection = ILibWrapper_WebRTC_ConnectionFactory_CreateConnection(mConnectionFactory, &WebRTCConnectionSink, &WebRTCDataChannelSink, &WebRTCConnectionSendOkSink);
 		ILibWrapper_WebRTC_Connection_SetStunServers(mConnection, stunServerList, 9);
 
 		if (useStun==0)
 		{
+			printf("stun is null in on post\n");
 			offer = ILibWrapper_WebRTC_Connection_SetOffer(mConnection, data, dataLen, NULL);
 			SimpleRendezvousServer_Respond(sender, token, 1, offer, strlen(offer), ILibAsyncSocket_MemoryOwnership_CHAIN);
 		}
 		else
 		{
-			// We're freeing this, becuase we'll generate the offer in the candidate callback...
+			printf(red"We're freeing this, becuase we'll generate the offer in the candidate callback...\n"rst);
 			// The best way, is to return this offer, and update the candidate incrementally, but that is for another sample
 			ILibWrapper_WebRTC_Connection_SetUserData(mConnection, sender, token, NULL);
 			free(ILibWrapper_WebRTC_Connection_SetOffer(mConnection, data, dataLen, &CandidateSink));
@@ -295,7 +321,7 @@ void Rendezvous_OnPost(SimpleRendezvousServer sender, SimpleRendezvousServerToke
 	}
 	else
 	{
-		// We inititiated the SDP exchange, so the browser is just giving us a response... Even tho, this will generate a counter-response
+		printf("We inititiated the SDP exchange, so the browser is just giving us a response... Even tho, this will generate a counter-response\n");
 		// we don't need to send it back to the browser, so we'll just drop it.
 		data[dataLen] = 0;
 		printf("Setting Offer...\r\n");
